@@ -169,3 +169,58 @@ abroad.
   silently — no alert, calls simply stop arriving.
 - **Travel eSIMs are poor value for continuous domestic use.** A rolling
   monthly UK data SIM is cheaper and has no silent expiry.
+
+## Zero-spend lockdown
+
+Goal: no charges except the prepaid travel eSIM and Voipfone itself.
+
+### Preferred — disable the business line on the device
+
+`Settings → Mobile Service → Business → Turn On This Line` → **off**
+
+- No data roaming, outbound calls or texts are possible.
+- Forwarding continues, because it is held in the network.
+- **Tradeoff: SMS to the business number will not arrive**, including banking
+  and 2FA codes. Resolve 2FA before travelling.
+
+### Alternative — line stays on, everything locked down
+
+| Setting | Path | Value |
+|---|---|---|
+| Data Roaming — business | `Mobile Service → Business → Data Roaming` | OFF |
+| Data Roaming — travel eSIM | `Mobile Service → <eSIM> → Data Roaming` | ON |
+| Mobile Data | `Mobile Service → Mobile Data` | Travel eSIM |
+| Allow Mobile Data Switching | `Mobile Service → Mobile Data` | OFF |
+| Wi-Fi Calling — business | `Mobile Service → Business → Wi-Fi Calling` | OFF |
+| Default Voice Line | `Mobile Service` | Business |
+
+Two settings are easy to miss:
+
+- **Allow Mobile Data Switching** — left on, iOS falls back to the business
+  line's data when the eSIM signal is weak. This is the charge the whole
+  arrangement exists to avoid.
+- **Wi-Fi Calling** — left on, the Phone app places calls over Wi-Fi billed at
+  normal UK rates. Not roaming, but still spend.
+
+### Network-level bar (recommended)
+
+Ask the carrier to bar roaming data, calls and texts on the business line
+while leaving call forwarding active. Device settings can be changed by
+accident or reset by an iOS update; a network bar cannot.
+
+### What still costs money
+
+- **The forwarding leg.** Every forwarded call is billed as a UK outbound call
+  from the mobile, for its full duration. Avoidable only by giving out the
+  Voipfone number directly and retiring the mobile number.
+
+### What cannot overspend
+
+- **Prepaid travel eSIM.** No overage billing — when the data is gone it stops
+  working. No bill shock, but no warning either; watch the balance in the
+  provider's app.
+
+### Protecting eSIM data
+
+- `Mobile Data Options → Low Data Mode` → on for the travel eSIM.
+- **Wi-Fi Assist** (bottom of `Mobile Service`) → off.
