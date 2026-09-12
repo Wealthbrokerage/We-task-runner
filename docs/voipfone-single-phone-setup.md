@@ -1,82 +1,80 @@
 # Voipfone — single phone setup
 
-Reference for registering **one** phone (deskphone, ATA or softphone) to a new
-Voipfone account. Written for the simple case: one handset, one number.
+Reference for registering **one** phone (deskphone, ATA or softphone) to a
+Voipfone account. Settings below are from Voipfone's official General Phone
+Configuration page.
 
-## 1. Collect your credentials
+Field names differ between handsets, so common aliases are listed.
 
-Everything comes from the Voipfone **Control Panel** (log in at voipfone.co.uk).
+## 1. Which account type?
 
-| What | Where to find it | Looks like |
-|---|---|---|
-| Account number | Top of the Control Panel | 8 digits starting `30`, e.g. `30999999` |
-| Phone / extension password | See "Which password" below | 6 digits, numeric |
+For a single phone with no Virtual PBX, use **Single User**. Only use the
+Multi-User settings if you are on Voipfone's PBX service.
 
-### Which password?
-
-There are two registration styles. For a **single phone, use Option A.**
-
-**Option A — register to the master account (simplest).**
-No Virtual PBX needed. The phone *is* the account.
-
-- Username / SIP ID: your account number alone, e.g. `30999999`
-- Password: the master account **phone password**, from
-  `Services → Master Account → Phone Settings`
-
-**Option B — register to a PBX extension.**
-Use this only if you have the Virtual PBX and want extension dialling,
-call groups, or plan to add more phones later.
-
-- Extensions start at **200**. Each needs a name, an email address (voicemail
-  is sent there) and its own 6-digit password.
-- Set them up under `Services → Virtual PBX → PBX Extensions`.
-- Username / SIP ID: `<account>*<extension>`, e.g. `30999999*200`
-  (note the `*` separator, not a dot or dash)
-- Password: that extension's own 6-digit password, not the account password.
-
-## 2. Settings to enter on the phone
-
-Field names vary by handset; the right-hand column lists common aliases.
+### Single User account (no PBX) — the single-phone case
 
 | Setting | Value | Also labelled |
 |---|---|---|
-| SIP server / registrar | `sip.voipfone.net` | Proxy, Domain, Realm, Host |
+| Username | Account number, e.g. `30999999` | Account, SIP ID, Authenticate ID, Authorised User |
+| Password | Your phone password (usually 6 digits) | PIN |
+| SIP server | `sip.voipfone.net` | Proxy, Registrar |
 | Port | `5060` | — |
 | Outbound proxy | `sip.voipfone.net` | — |
-| Username | `30999999` (A) or `30999999*200` (B) | SIP ID, Auth ID, Account, Login |
-| Password | 6-digit password from step 1 | PIN, Auth password |
-| Display name | Whatever you want shown | Caller ID name, Label |
-| Transport | UDP | — |
-| Registration expiry | `600` seconds | Register expires, Refresh |
-| Preferred codec | G711a (a-law) | PCMA |
+| Registration expiry | **60 seconds (1 minute)** | Proposed expiry |
 
-Notes:
+Password location: `Master Account → Phone Settings` in the Control Panel.
 
-- **Registration expiry**: handsets commonly default to 3600s (an hour).
-  Dropping it to 600s keeps the NAT pinhole open so inbound calls arrive.
-- **Codec**: some Voipfone softphones default to GSM to save bandwidth.
-  Switch to a-law (G711a) for noticeably better call quality — fine on any
-  normal broadband connection.
-- **Outbound proxy**: not always required, but setting it resolves most
-  "registers fine but no inbound calls" problems.
+### Multi-User account (with PBX)
+
+Same server, port, outbound proxy and expiry as above. Only the credentials
+differ:
+
+| Setting | Value |
+|---|---|
+| Username | `<8-digit account>*<3-digit extension>`, e.g. `30999999*200` |
+| Password | That extension's password (usually 6 digits) |
+
+Password location: `Virtual PBX → PBX Extensions` in the Control Panel.
+
+> **Everything else should be left at its default.** Do not change codecs,
+> STUN or NAT settings unless you are troubleshooting a specific fault.
+
+## 2. Can't find your password?
+
+- Your password is **not** your memorable word.
+- You may be on an **Extension Account**. Check your Dashboard: if the page
+  title reads `Extension` followed by your extension number, you cannot see
+  the password yourself — ask the account owner for it.
 
 ## 3. Test it
 
-1. Check the phone shows **Registered** (Voipfone Control Panel will also
-   show the extension/account as online).
-2. Dial `123` — Voipfone's echo/test service — to confirm two-way audio.
-3. Call the phone from a mobile to confirm inbound routing.
-4. Make an outbound call to a mobile and check the caller ID presented.
+| Dial | Checks |
+|---|---|
+| `155` | Phone is connecting and registering correctly |
+| `152` | Echo test — quality of your connection to Voipfone |
 
-## 4. Troubleshooting
+Then call the phone from a mobile to confirm inbound routing, and call out to
+confirm the caller ID presented.
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| Won't register | Wrong username format | Check `*` separator and that the password matches the *extension*, not the account |
-| Registers, no inbound calls | NAT timeout | Set expiry to 600s; add the outbound proxy |
-| One-way audio | NAT / RTP blocked | Enable STUN on the handset; avoid SIP ALG on the router (turn it **off**) |
-| Poor call quality | GSM codec | Switch to G711a (a-law) |
-| Calls drop after ~30s | SIP ALG interfering | Disable SIP ALG on the router |
+## 4. If it's still not working
+
+**Check firmware first.** Voipfone add features that depend on up-to-date
+equipment. Install the most recent **full release** from the manufacturer's
+site — avoid beta firmware, which may not work correctly. Message Waiting
+Indication (MWI) failing is a classic symptom of firmware that doesn't
+support it properly.
+
+Then work through:
+
+| Symptom | Check |
+|---|---|
+| Won't register | Username format — account number alone for Single User, `account*extension` for PBX. Confirm the password is the *phone/extension* password, not the memorable word |
+| Registers but no inbound calls | Registration expiry is set to 60s, and outbound proxy is set |
+| Dial 155 fails | Registration is not succeeding — recheck credentials before anything else |
+| One-way audio, or calls dropping ~30s | Router-side SIP ALG. Not a Voipfone setting — disabling SIP ALG resolves this on most routers |
+
+Any standards-based SIP hardware works on the network. For an unusual device,
+email Voipfone with as much detail as possible.
 
 Voipfone customer service: **0345 868 5555**.
 
