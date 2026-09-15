@@ -59,15 +59,32 @@ def load_lots(path):
 
 
 def parse_dump(path):
-    """Yield (postcode, leader, line) for every line carrying a postcode."""
+    """Yield one record per line carrying a postcode.
+
+    A line shaped "lot | address | guide" is split into those fields; anything
+    else is scanned whole. Splitting matters: without it the leading lot number
+    is taken for the house number, so two flats in one building match each
+    other instead of themselves.
+    """
     raw = pathlib.Path(path).read_text(encoding="utf-8", errors="replace")
     for line in raw.splitlines():
         line = " ".join(line.split())
         if not line:
             continue
-        pc = norm_postcode(line)
+        lot = guide = ""
+        address = line
+        if line.count("|") >= 2:
+            lot, address, guide = (f.strip() for f in line.split("|", 2))
+        pc = norm_postcode(address)
         if pc:
-            yield pc, leader(line), line
+            yield {
+                "postcode": pc,
+                "leader": leader(address),
+                "lot": lot,
+                "address": address,
+                "guide": guide,
+                "line": line,
+            }
 
 
 def main(argv):
@@ -88,8 +105,9 @@ def main(argv):
     for dump in args:
         status = pathlib.Path(dump).stem
         n = 0
-        for pc, ld, line in parse_dump(dump):
-            site[pc].append((status, ld, line))
+        for rec in parse_dump(dump):
+            rec["status"] = status
+            site[rec["postcode"]].append(rec)
             n += 1
         print(f"# loaded {n} site entries from {dump} (status: {status})",
               file=sys.stderr)
@@ -97,7 +115,8 @@ def main(argv):
     out = csv.writer(sys.stdout)
     out.writerow(
         ["lot", "address", "guide_price", "hometrack", "serco_status",
-         "accepted_offer", "status", "confidence", "site_entry"]
+         "accepted_offer", "status", "confidence", "site_lot", "site_guide",
+         "site_entry"]
     )
 
     counts = defaultdict(int)
@@ -105,18 +124,29 @@ def main(argv):
         pc = norm_postcode(row["address"])
         hits = site.get(pc, []) if pc else []
 
+        site_guide = site_lot = ""
         if not pc:
             status, conf, entry = "CHECK MANUALLY", "no postcode in our address", ""
         elif not hits:
             status, conf, entry = "NOT LISTED", "postcode absent from dumps", ""
         else:
             ours = leader(row["address"])
-            exact = [h for h in hits if ours and h[1] == ours]
+            exact = [h for h in hits if ours and h["leader"] == ours]
             chosen = exact or hits
-            status = chosen[0][0]
-            entry = chosen[0][2]
+            status = chosen[0]["status"]
+            entry = chosen[0]["line"]
+            site_guide = chosen[0]["guide"]
+            site_lot = chosen[0]["lot"]
+            # The catalogue marks withdrawn-before-sale lots inline; those are
+            # gone, not available, whatever the dump's filename says.
+            if "sold prior" in entry.lower():
+                status = "SOLD PRIOR"
+            numbered = [h for h in hits if h["leader"]]
             if exact:
                 conf = "postcode + number"
+            elif ours and numbered and len(numbered) == len(hits):
+                status, entry, site_guide, site_lot = "NOT LISTED", "", "", ""
+                conf = f"different unit at {pc} ({ours} not offered)"
             elif len(hits) == 1:
                 conf = "postcode only"
             else:
@@ -125,7 +155,8 @@ def main(argv):
         counts[status] += 1
         out.writerow([
             row["lot"], row["address"], row["guide_price"], row["hometrack"],
-            row["serco_status"], row["accepted_offer"], status, conf, entry,
+            row["serco_status"], row["accepted_offer"], status, conf,
+            site_lot, site_guide, entry,
         ])
 
     print("\n# summary", file=sys.stderr)
