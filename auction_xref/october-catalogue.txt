@@ -91,3 +91,6 @@
 91 | Hambridge Mill, Hambridge, Langport, Somerset, TA10 0BP | Sold prior to auction, for an undisclosed amount
 92 | 34 Whaddon Road, Cheltenham, Gloucestershire, GL52 5NA | Sold prior to auction, for an undisclosed amount
 93 | 44 Newton Nottage Road, Porthcawl, Mid Glamorgan, CF36 5RP | Sold prior to auction, for an undisclosed amount
+? | Flat 5 Poplar House, 11 Woodland Crescent, London, SE16 6YJ | £375,000+
+? | 102-104 High Street, Redcar, Cleveland, TS10 3DL | £100,000-£150,000
+? | 106 High Street, Redcar, Cleveland, TS10 3DL | £50,000-£70,000
