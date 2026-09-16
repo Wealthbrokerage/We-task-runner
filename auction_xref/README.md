@@ -1,55 +1,58 @@
 # Auction lot cross-reference
 
-Checks our tracked Auction House London lots against the auction house's own
-pages, to see which are still available.
+Checks our tracked Auction House London lots against the auction house's live
+catalogue, and builds the deliverable workbook.
 
-## What's here
+## Files
 
 - `lots.csv` — the 100 lots we track, transcribed from
-  `Dropbox:/Clients/Vance/110 portfolio/October auction.xlsx`, with guide price,
-  Hometrack AVM, Serco status and any accepted offer.
-- `xref.py` — matches those lots against a saved copy of an auction house page.
-- `example-dump.txt` — four made-up lines showing the input format. Not real data.
+  `Dropbox:/Clients/Vance/110 portfolio/October auction.xlsx`.
+- `october-catalogue.txt` — the auction house's current catalogue, one lot per
+  line as `site id | address | guide`.
+- `fetch_catalogue.py` — regenerates that file from a fetched copy of the page.
+- `xref.py` — matches our lots against the catalogue, writing `results.csv`.
+- `build_workbook.py` — builds `Auction lots - checked list.xlsx` from the above.
 
-## Provenance of `lots.csv`
+## Refreshing
 
-The source spreadsheet is named "October auction" but the lots are the
-**2nd–3rd September 2026** sale, confirmed against two published lot records
-(lot 99, 23 Selkirk Road, and lot 101, 49 Exmouth Road — both dated 02/09/2026).
-The spreadsheet's own source note flagged this as unresolved; it is now resolved.
-That auction has run, so "available" for these lots means *unsold and still
-offered*, not *in the catalogue*.
+This container cannot reach `auctionhouselondon.co.uk`; the egress proxy refuses
+the domain. The page is fetched instead through Zapier's "Webhooks by Zapier"
+GET action, which runs on Zapier's infrastructure:
 
-Two addresses are corrected here against the site and kept as the site spells
-them, so matching works:
+    selected_api: WebHookCLIAPI, action: get
+    params: {"url": "https://auctionhouselondon.co.uk/current-auction",
+             "data": {}, "as_json": "no"}
 
-| Sheet | Corrected |
-| --- | --- |
-| 4 Narin Court, Tilbury | 4 Nairn Court |
-| 3 Jane Court, St Albans | 3 Dane Court |
-| 104 Graveney Road, SW17 0DH | SW17 0EH |
+The ~800KB response is saved to a file. Then:
 
-## Usage
+    python3 fetch_catalogue.py <saved-response.txt>
+    python3 xref.py october-catalogue.txt --lots lots.csv > results.csv
+    python3 build_workbook.py
 
-Save the auction house page as text — copy-paste, or print-to-PDF then extract —
-naming each file after the status it represents:
+Do this again nearer 7-8 October: the sale was still taking entries when it was
+last captured, so lots will have been added.
 
-```
-python3 xref.py still-available.txt october-catalogue.txt
-```
+## Two things that caused wrong answers, now fixed
 
-The filename stem becomes the reported status, so `still-available.txt` yields
-`still-available`. Lots whose postcode appears in no dump come back `NOT LISTED`.
-Results go to stdout as CSV; the summary goes to stderr.
+**A browser copy-paste of the catalogue silently dropped lots.** It yielded 93
+where the page holds 107, and several of our lots were reported as absent from
+the October sale when they were in it. Always regenerate from a fetch, never a
+paste.
 
-```
-python3 xref.py still-available.txt > results.csv
-```
+**openpyxl discards cached formula values on every save.** Each edit pass wiped
+the values written by the one before, so computed columns read blank outside
+Excel. `build_workbook.py` regenerates all sheets in one pass and patches the
+values as its last step. Prefer re-running it over editing the workbook in place.
 
-## Why matching is on postcode
+## Matching
 
-Lot numbers and property names drift between our sheet and the site — our lot 39
-"Holmshill House" is the site's lot 40 "Holmshill Farm". Postcode is the only
-stable key. Where several lots share a postcode (2 Moorfields, Regatta Point),
-the leading flat/house number separates them; where it can't, the row is marked
-`AMBIGUOUS` for a human to settle rather than guessed at.
+On postcode, then flat/house number. Lot numbers and property names differ
+between sales — our lot 39 "Holmshill House" is the site's "Holmshill Farm" — so
+neither is a safe key. Where lots share a postcode the leading unit number
+separates them; anything unresolved is reported rather than guessed.
+
+## Known limit
+
+"Not in October catalogue" does not mean sold. Separating sold from withdrawn
+from unsold-and-still-available needs the auction house's "lots still available"
+page, which is not yet captured.
