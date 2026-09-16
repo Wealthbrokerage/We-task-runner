@@ -48,8 +48,9 @@ CAUTION = {
  "169": "No.4 not indexed; value is No.5 - AVM UNRELIABLE",
 }
 STATUS = {"october-catalogue": "In October catalogue",
+          "still-available": "Still available - unsold, offers invited",
           "SOLD PRIOR": "Sold prior to auction",
-          "NOT LISTED": "Not in October catalogue - availability unconfirmed"}
+          "NOT LISTED": "Not listed - sold or withdrawn"}
 
 
 def low(s):
@@ -105,7 +106,7 @@ def main():
         ws.cell(row=i, column=8, value=f"=1-G{i}")
         ws.cell(row=i, column=9, value=p["status"])
         ws.cell(row=i, column=10, value=p["caution"])
-        fill = live if p["status"].startswith("In October") else None
+        fill = live if p["status"][:2] in ("In", "St") else None
         if p["caution"]:
             fill = warn
         for c in range(1, len(heads) + 1):
@@ -127,7 +128,7 @@ def main():
 
     nt = wb.create_sheet("Notes")
     nt.column_dimensions["A"].width = 112
-    in_oct = sum(1 for p in top if p["status"].startswith("In October"))
+    in_oct = sum(1 for p in top if p["status"][:2] in ("In", "St"))
     flagged = sum(1 for p in top if p["caution"])
     lines = [
      ("Top 30 by discount to Hometrack valuation", True), ("", False),
@@ -139,13 +140,12 @@ def main():
      (f"Only lots with BOTH a guide and a numeric Hometrack figure can be ranked: 69 of the 100",False),
      ("we track. The other 31 are land, garages, parking spaces, commercial units and flats the",False),
      ("AVM could not isolate, so no discount can be computed for them.",False),("",False),
-     ("AVAILABILITY - READ BEFORE ACTING", True),
-     (f"Only {in_oct} of these 30 are confirmed in the 7-8 October catalogue (shaded green).",False),
-     ("The rest come from our September tracked list. That auction has run, so they may have sold,",False),
-     ("been withdrawn, or remain unsold and available - we cannot tell from what we hold. Checking",False),
-     ("needs the auction house's 'lots still available' page, which has not been captured.",False),
-     ("Only 11 of the 107 October lots have a Hometrack valuation at all, which is why a top 30",False),
-     ("cannot be drawn from the October sale alone.",False),("",False),
+     ("Availability", True),
+     (f"{in_oct} of these 30 can still be bought (shaded green): either in the 7-8 October",False),
+     ("catalogue, or on the auction house's 'lots still available' list, where unsold lots from",False),
+     ("past sales take offers directly. The rest appear on neither page, so they sold at the",False),
+     ("September auction or were withdrawn - reference only, not actionable.",False),
+     ("Both pages fetched from the site on 16 September 2026.",False),("",False),
      ("VALUATION CHECK COLUMN", True),
      (f"{flagged} of these 30 are shaded amber because the Hometrack figure is not cleanly for the",False),
      ("lot being sold - it is the whole building, a representative unit, or a neighbouring property.",False),

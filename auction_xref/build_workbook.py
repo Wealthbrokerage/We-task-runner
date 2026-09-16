@@ -90,8 +90,11 @@ def widths(ws, ws_widths):
 
 
 STATUS = {"october-catalogue": "In October catalogue",
+          "still-available": "Still available - unsold, offers invited",
           "SOLD PRIOR": "Sold prior to auction",
-          "NOT LISTED": "Not in October catalogue"}
+          "NOT LISTED": "Not listed - sold or withdrawn"}
+# Statuses meaning the lot can still be bought.
+BUYABLE = ("october-catalogue", "still-available")
 NO_OFFER_LOTS = {"29", "42", "111", "114", "117", "122", "152"}
 
 
@@ -104,7 +107,7 @@ def verification(r):
 
 def main():
     results = list(csv.DictReader(open("results.csv")))
-    order = {"october-catalogue": 0, "SOLD PRIOR": 1, "NOT LISTED": 2}
+    order = {"october-catalogue": 0, "still-available": 1, "SOLD PRIOR": 2, "NOT LISTED": 3}
     results.sort(key=lambda r: (order[r["status"]], -(low(r["guide_price"]) or 0)))
 
     catalogue = []
@@ -172,7 +175,7 @@ def main():
         ws.cell(row=i, column=6,
                 value=offer if offer else ("No offers" if r["lot"] in NO_OFFER_LOTS else None))
         ws.cell(row=i, column=7, value=f'=IFERROR(F{i}/C{i},"")')
-        fill = GONE if r["status"] == "SOLD PRIOR" else (LIVE if r["status"] == "october-catalogue" else None)
+        fill = GONE if r["status"] == "SOLD PRIOR" else (LIVE if r["status"] in BUYABLE else None)
         style(ws, i, 7, wrap_col=1, fill=fill)
         for c in (2, 3, 4, 6):
             ws.cell(row=i, column=c).number_format = GBP
@@ -204,7 +207,7 @@ def main():
         ws.cell(row=i, column=13, value=r["serco_status"])
         ws.cell(row=i, column=14, value=STATUS[r["status"]])
         ws.cell(row=i, column=15, value=verification(r))
-        fill = GONE if r["status"] == "SOLD PRIOR" else (LIVE if r["status"] == "october-catalogue" else None)
+        fill = GONE if r["status"] == "SOLD PRIOR" else (LIVE if r["status"] in BUYABLE else None)
         style(ws, i, 15, wrap_col=2, fill=fill)
         for c in (4, 7, 8, 10):
             ws.cell(row=i, column=c).number_format = GBP
@@ -240,9 +243,15 @@ def main():
      ("  Working list      - our 100 tracked lots, address / guide / Hometrack / +20% / offer.",False),
      ("  Checked list      - the audit trail: how each of the 100 was matched, and to what.",False),("",False),
      (f"Of the {len(catalogue)} October lots, {matched} are ones we already knew from September;",False),
-     (f"the rest are new to us. Of our 100 September lots, {counts.get('october-catalogue',0)} are",False),
-     (f"in the October catalogue, {counts.get('SOLD PRIOR',0)} sold prior, and",False),
-     (f"{counts.get('NOT LISTED',0)} are not in it - subject to the warning above.",False),("",False),
+     ("the rest are new to us. Of our 100 September lots: "
+      f"{counts.get('october-catalogue',0)} are in the",False),
+     (f"October catalogue, {counts.get('still-available',0)} are unsold and still available by offer,",False),
+     (f"{counts.get('SOLD PRIOR',0)} sold before the sale, and {counts.get('NOT LISTED',0)} appear on",False),
+     ("neither page - sold at the September auction, or withdrawn.",False),("",False),
+     ("Availability", True),
+     ("Every one of the 100 now has a confirmed status, checked against two pages on the auction",False),
+     ("house site: the October catalogue, and the 'lots still available' list where unsold lots",False),
+     ("from past sales take offers directly. Both fetched 16 September 2026.",False),("",False),
      ("The biggest gap", True),
      ("Most October lots have no Hometrack valuation, because they are lots we have never valued.",False),
      ("Until those are pulled from Sourcing Brain this workbook can say what is on offer and at",False),

@@ -1,6 +1,8 @@
 # loaded 107 site entries from october-catalogue.txt (status: october-catalogue)
+# loaded 122 site entries from still-available.txt (status: still-available)
 
 # summary
-#   NOT LISTED: 83
+#   NOT LISTED: 44
+#   still-available: 39
 #   october-catalogue: 15
 #   SOLD PRIOR: 2
