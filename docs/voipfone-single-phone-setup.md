@@ -224,3 +224,64 @@ accident or reset by an iOS update; a network bar cannot.
 
 - `Mobile Data Options → Low Data Mode` → on for the travel eSIM.
 - **Wi-Fi Assist** (bottom of `Mobile Service`) → off.
+
+---
+
+# Plan choice — why Flex
+
+Decided October 2026 after the Home Unlimited trial expired.
+
+## Background
+
+The account was opened on the **Home Unlimited** trial (free first month,
+£14/month thereafter). When the trial ended the £14 renewal failed, which is
+what prompted the review. Nothing was wrong with the configuration.
+
+## Why Home Unlimited was the wrong plan
+
+It buys unlimited calls to UK 01/02/03 landlines and 07 mobiles. It does
+**not** cover international calls — those come out of call credit on any plan.
+The requirement here is occasional outbound calling while abroad, so the
+bundled UK minutes were largely unused.
+
+## Flex costs
+
+| Item | Cost (ex VAT) |
+|---|---|
+| Flex user / extension | £2/mo |
+| UK geographic number (020) | £3/mo |
+| **Monthly total** | **~£5/mo** |
+| UK landline 01/02/03 | 1p/min from credit |
+| UK mobile 07 | 7p/min from credit |
+| International | per destination, from credit |
+
+Voicemail, call diverts and the softphone app are included on every plan.
+
+Saving against Home Unlimited: roughly £8–9/month.
+
+## Break-even
+
+The ~£9/month difference buys, on Flex, about **900 minutes** of UK landline
+calls or **128 minutes** of UK mobile calls. Unlimited only wins above roughly
+two hours of UK mobile calling per month.
+
+## Switching — order matters
+
+**Do not press "Renew All" while still on the old plan** — that charges the
+full amount. Change the plan first.
+
+1. `my.voipfone.co.uk` → `Services → Master Account → Services`
+2. Scroll down, click **"Show Business Plans"**
+3. Select **Flex**
+4. Review the itemised services and cancel anything unused
+5. Then settle anything outstanding
+
+A failed payment gives **7 days** before all services cease, including 999.
+
+## Open options
+
+- **Flex includes a free 056 number.** Dropping the £3 020 number would take
+  the bill to ~£2/month, but the mobile forward points at the 020 — only worth
+  changing if that number is not yet public.
+- **Auto top-up** pays for calls on Flex. Set the trigger at a sensible level
+  rather than disabling it, or calls will fail abroad.
